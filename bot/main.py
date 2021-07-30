@@ -9,7 +9,7 @@ token = os.getenv("DISCORD_BOT_TOKEN")
 
 @client.event
 async def on_ready() :
-    await client.change_presence(status = discord.Status.active, activity = discord.Game("Planning for world domination"))
+    await client.change_presence(status = discord.Status.active, activity = discord.Game("Crash the Stock Market"))
     print("I am online")
 
 @client.command()
