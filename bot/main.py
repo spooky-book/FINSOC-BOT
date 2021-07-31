@@ -50,6 +50,9 @@ async def verify(ctx, arg=None):
 
         # i also currently need to have an error message when the input is wrong however it shouldnt end the command i.e. we should be able to continue entering zid without writing .verify
 
+        # need to send an email now to the people
+        # probably also need to move this into a separate file have to use discord COGS
+
         try:
             msg = await client.wait_for('message', check=is_zID_correct, timeout=15)
             await ctx.send("Thanks, we will send an verification code to your UNSW email, please just reply to me with your verification code. There will be a 2 minute timer for the verification code")
