@@ -13,7 +13,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 # code for verification
-
 class verification(commands.Cog):
     def __init__(self, bot):
         load_dotenv()
@@ -49,17 +48,18 @@ class verification(commands.Cog):
             # i also currently need to create an error message when the input is wrong however it shouldnt end the command i.e. we should be able to continue entering zid without writing .verify
 
             try:
-                ID = await self.bot.wait_for('message', check=is_zID_correct, timeout=15)
+                ID = await self.bot.wait_for('message', check=is_zID_correct, timeout=15.0)
                 await ctx.send("Thanks, we will send an verification code to your UNSW email, please just reply to me with your verification code. There will be a 2 minute timer for the verification code")
-                print(ID)
                 print(ID.content)
+                print(ID)
 
                 OTP = self.create_verification_code()
 
-                self.send_email(ID, OTP)
-                password = await self.bot.wait_for('message', timeout=120)
+                await self.send_email(ID, OTP)
+                password = await self.bot.wait_for('message', timeout=120.0)
 
                 if OTP == password.content.strip():
+                    # insert verification code here
                     await ctx.send("Verified, you can now interact on the server")
                 else:
                     await ctx.send("Verification Code not accepted please repeat the process to get verified.")
@@ -119,17 +119,6 @@ class verification(commands.Cog):
             message.attach(converted_html_text)
 
             server.sendmail("unswfinsocbot@gmail.com", receiver_email, message.as_string())
-
-            # password = os.getenv("finsoc_bot_pass")
-            # # print(password)
-            # server.login("unswfinsocbot@gmail.com", password)
-            # receiver_email = 'z' + zID.content + "@student.unsw.edu.au"
-            # # print(receiver_email)
-            # message = '''\
-            #     Subject: Test 2
-
-            #     testing blah blah blah'''
-            # server.sendmail("unswfinsocbot@gmail.com", receiver_email, message)
 
     # creates the verification code that the user needs to input to verify themselves
     def create_verification_code(self):
