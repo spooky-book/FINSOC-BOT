@@ -1,9 +1,13 @@
 import discord
 from discord.ext import commands
+
 import asyncio
 import smtplib
 import ssl
 import os
+import secrets
+import string
+
 from dotenv import load_dotenv
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -33,17 +37,34 @@ class verification(commands.Cog):
                     # ctx.send("Make sure you have entered your zID correctly")
                     return False
 
+            def is_OTP_correct(message):
+                if not(ctx.author == message.author and ctx.channel == message.channel):
+                    return False
+                else:
+                    return True
+
             # there is currently a bug im pretty sure in which the client.wait for picks up the bots own message and uses that
             # probs need some checks or something idk not sure if its actually fixed
 
             # i also currently need to create an error message when the input is wrong however it shouldnt end the command i.e. we should be able to continue entering zid without writing .verify
 
             try:
-                msg = await self.bot.wait_for('message', check=is_zID_correct, timeout=15)
+                ID = await self.bot.wait_for('message', check=is_zID_correct, timeout=15)
                 await ctx.send("Thanks, we will send an verification code to your UNSW email, please just reply to me with your verification code. There will be a 2 minute timer for the verification code")
-                print(msg)
-                self.send_email(msg)
-                msg = await self.bot.wait_for('message', timeout=120)
+                print(ID)
+                print(ID.content)
+
+                OTP = self.create_verification_code()
+
+                self.send_email(ID, OTP)
+                password = await self.bot.wait_for('message', timeout=120)
+
+                if OTP == password.content.strip():
+                    await ctx.send("Verified, you can now interact on the server")
+                else:
+                    await ctx.send("Verification Code not accepted please repeat the process to get verified.")
+
+
             except asyncio.TimeoutError:
                 await ctx.send("You took too long to respond. If you still want to verify your status on the server please use the verify command again. Thanks.")
             except Exception as e:
@@ -54,7 +75,7 @@ class verification(commands.Cog):
     # we need to be able to create a blacklist that prevents people from reverification after banning
     # they will have to directly message execs to get unblacklisted
     # might not be top priority
-    def send_email(self, zID):
+    def send_email(self, zID, OTP):
         with smtplib.SMTP_SSL(host='smtp.gmail.com', port=465, context=ssl.create_default_context()) as server:
             password = os.getenv("finsoc_bot_pass")
             server.login("unswfinsocbot@gmail.com", password)
@@ -65,12 +86,13 @@ class verification(commands.Cog):
             message['From'] = "unswfinsocbot@gmail.com"
             message['To'] = receiver_email
             message['Subject'] = 'FINSOC Discord Verification'
+
             msg_text = f'''\
                 Hello,
 
                 Below is your verification code, please reply to the bot in your DM channel to get verified.
 
-                {self.create_verification_code()}
+                {OTP}
 
                 Thank you.'''
 
@@ -83,7 +105,7 @@ class verification(commands.Cog):
                             <br>
                             Below is your verification code, please reply to the bot in your DM channel to get verified.
 
-                            <h3>{self.create_verification_code()}</h3>
+                            <h3>{OTP}</h3>
 
                             Thank you.
                         </p>
@@ -109,8 +131,10 @@ class verification(commands.Cog):
             #     testing blah blah blah'''
             # server.sendmail("unswfinsocbot@gmail.com", receiver_email, message)
 
+    # creates the verification code that the user needs to input to verify themselves
     def create_verification_code(self):
-        pass
+        alphabet = string.ascii_letters + string.digits
+        return ''.join(secrets.choice(alphabet) for i in range(8))
 
 
 def setup(bot):
