@@ -55,15 +55,18 @@ class verification(commands.Cog):
 
                 OTP = self.create_verification_code()
 
-                await self.send_email(ID, OTP)
-                password = await self.bot.wait_for('message', timeout=120.0)
+                email_successful = self.send_email(ID, OTP)
 
-                if OTP == password.content.strip():
-                    # insert verification code here
-                    await ctx.send("Verified, you can now interact on the server")
+                if email_successful:
+                    password = await self.bot.wait_for('message', timeout=120.0)
+
+                    if OTP == password.content.strip():
+                        # insert verification code here
+                        await ctx.send("Verified, you can now interact on the server")
+                    else:
+                        await ctx.send("Verification Code not accepted please repeat the process to get verified.")
                 else:
-                    await ctx.send("Verification Code not accepted please repeat the process to get verified.")
-
+                    await ctx.send("Something went wrong when sending your verification code, please try again. If this is recurring try waiting before contacting IT")
 
             except asyncio.TimeoutError:
                 await ctx.send("You took too long to respond. If you still want to verify your status on the server please use the verify command again. Thanks.")
@@ -76,7 +79,9 @@ class verification(commands.Cog):
     # they will have to directly message execs to get unblacklisted
     # might not be top priority
     def send_email(self, zID, OTP):
-        with smtplib.SMTP_SSL(host='smtp.gmail.com', port=465, context=ssl.create_default_context()) as server:
+        try:
+            server = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465, context=ssl.create_default_context())
+
             password = os.getenv("finsoc_bot_pass")
             server.login("unswfinsocbot@gmail.com", password)
             receiver_email = 'z' + zID.content + "@ad.unsw.edu.au"
@@ -119,6 +124,12 @@ class verification(commands.Cog):
             message.attach(converted_html_text)
 
             server.sendmail("unswfinsocbot@gmail.com", receiver_email, message.as_string())
+
+            return True
+        except Exception:
+            return False
+        finally:
+            server.close()
 
     # creates the verification code that the user needs to input to verify themselves
     def create_verification_code(self):
