@@ -38,8 +38,6 @@ class verification(commands.Cog):
                 else:
                     return False
 
-            # there is currently a bug im pretty sure in which the client.wait for picks up the bots own message and uses that
-
             # TODO maybe be able to continue entering zid without writing .verify
 
             try:
@@ -107,30 +105,11 @@ class verification(commands.Cog):
             message['To'] = receiver_email
             message['Subject'] = 'FINSOC Discord Verification'
 
-            msg_text = f'''\
-                Hello,
+            texts = create_email_message_text(OTP)
 
-                Below is your verification code, please reply to the bot in your DM channel to get verified.
+            msg_text = texts[0]
 
-                {OTP}
-
-                Thank you.'''
-
-            html_text = f'''\
-                <html>
-                    <body>
-                        <p>
-                            Hello,
-                            <br>
-                            <br>
-                            Below is your verification code, please reply to the bot in your DM channel to get verified.
-
-                            <h3>{OTP}</h3>
-
-                            Thank you.
-                        </p>
-                    </body>
-                </html>'''
+            html_text = texts[1]
 
             converted_msg_text = MIMEText(msg_text, 'plain')
             converted_html_text = MIMEText(html_text, 'html')
@@ -151,6 +130,36 @@ class verification(commands.Cog):
     def create_verification_code(self):
         alphabet = string.ascii_letters + string.digits
         return ''.join(secrets.choice(alphabet) for i in range(8))
+
+    def create_email_message_text(self, OTP):
+        msg_text = f'''
+                \
+                Hello,
+
+                Below is your verification code, please reply to the bot in your DM channel to get verified.
+
+                {OTP}
+
+                Thank you.'''
+
+        html_text = f'''
+                \
+                <html>
+                    <body>
+                        <p>
+                            Hello,
+                            <br>
+                            <br>
+                            Below is your verification code, please reply to the bot in your DM channel to get verified.
+
+                            <h3>{OTP}</h3>
+
+                            Thank you.
+                        </p>
+                    </body>
+                </html>'''
+
+        return [msg_text, html_text]
 
 
 def setup(bot):

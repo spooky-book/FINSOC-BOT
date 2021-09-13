@@ -5,8 +5,8 @@ import os
 
 load_dotenv()
 client = commands.Bot(command_prefix=".")
-# token = os.getenv("DISCORD_BOT_TOKEN")
-token = os.getenv("mytestingtoken")
+token = os.getenv("DISCORD_BOT_TOKEN")
+# token = os.getenv("mytestingtoken")
 
 extensions=["verify"]
 
