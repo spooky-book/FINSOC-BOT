@@ -3,21 +3,23 @@ from discord.ext import commands
 from discord.utils import get
 
 import asyncio
-import smtplib
-import ssl
 import os
 import secrets
 import string
+import base64
 
 from dotenv import load_dotenv
+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from extensions.gmail import create_gmail_service
 
 # code for verification
 class verification(commands.Cog):
     def __init__(self, bot):
         load_dotenv()
         self.bot = bot
+        self.email_service = create_gmail_service('client_secret.json')
 
     '''
         Authenticates a user using their zID to ensure that they are part of UNSW
@@ -37,8 +39,6 @@ class verification(commands.Cog):
                     return True
                 else:
                     return False
-
-            # TODO maybe be able to continue entering zid without writing .verify
 
             try:
                 message = await self.bot.wait_for('message', check=not_bot, timeout=15.0)
@@ -92,39 +92,26 @@ class verification(commands.Cog):
     # TODO we need to be able to create a blacklist that prevents people from reverification after banning
     # they will have to directly message execs to get unblacklisted might not be top priority
     def send_email(self, zID, OTP):
-        try:
-            server = smtplib.SMTP_SSL(host='smtp.gmail.com', port=465, context=ssl.create_default_context())
 
-            password = os.getenv("finsoc_bot_pass")
-            server.login("unswfinsocbot@gmail.com", password)
-            receiver_email = 'z' + zID + "@ad.unsw.edu.au"
+        receiver_email = 'z' + zID + "@ad.unsw.edu.au"
 
-            message = MIMEMultipart('alternative')
+        message = MIMEMultipart('alternative')
+        message['To'] = receiver_email
+        message['Subject'] = 'FINSOC Discord Verification'
 
-            message['From'] = "unswfinsocbot@gmail.com"
-            message['To'] = receiver_email
-            message['Subject'] = 'FINSOC Discord Verification'
+        texts = self.create_email_message_text(OTP)
 
-            texts = create_email_message_text(OTP)
+        msg_text = texts[0]
+        html_text = texts[1]
 
-            msg_text = texts[0]
+        message.attach(MIMEText(msg_text, 'plain'))
+        message.attach(MIMEText(html_text, 'html'))
 
-            html_text = texts[1]
+        raw_string = base64.urlsafe_b64encode(message.as_bytes()).decode()
 
-            converted_msg_text = MIMEText(msg_text, 'plain')
-            converted_html_text = MIMEText(html_text, 'html')
+        self.email_service.users().messages().send(userId='me', body={'raw': raw_string}).execute()
 
-            message.attach(converted_msg_text)
-            message.attach(converted_html_text)
-
-            server.sendmail("unswfinsocbot@gmail.com", receiver_email, message.as_string())
-
-            return True
-        except Exception as email_exception:
-            print(email_exception)
-            return False
-        finally:
-            server.close()
+        return True
 
     # creates the verification code that the user needs to input to verify themselves
     def create_verification_code(self):

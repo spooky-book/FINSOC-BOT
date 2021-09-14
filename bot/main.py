@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from extensions.gmail import create_gmail_service
 import os
 
 load_dotenv()
