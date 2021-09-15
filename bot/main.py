@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
 @client.event
 async def on_ready() :
-    await client.change_presence(status = discord.Status.active, activity = discord.Game("Crash the Stock Market"))
+    await client.change_presence(status = discord.Status.idle, activity = discord.Game("Crash the Stock Market"))
     print("I am online")
 
 @client.command()
