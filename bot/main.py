@@ -11,6 +11,7 @@ token = os.getenv("DISCORD_BOT_TOKEN")
 
 extensions=["verify"]
 
+# loads in the extensions that we have made into the bot
 if __name__ == "__main__":
     for extension in extensions:
         client.load_extension(f"extensions.{extension}")
@@ -28,9 +29,9 @@ async def ping(ctx) :
 async def whoami(ctx) :
     await ctx.send(f"You are {ctx.message.author.name}")
 
-@client.command()
-async def clear(ctx, amount=3) :
-    await ctx.channel.purge(limit=amount)
+# @client.command()
+# async def clear(ctx, amount=3) :
+#     await ctx.channel.purge(limit=amount)
 
 
 client.run(token)
