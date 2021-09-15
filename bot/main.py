@@ -1,11 +1,19 @@
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from extensions.gmail import create_gmail_service
 import os
 
 load_dotenv()
 client = commands.Bot(command_prefix=".")
 token = os.getenv("DISCORD_BOT_TOKEN")
+# token = os.getenv("mytestingtoken")
+
+extensions=["verify"]
+
+if __name__ == "__main__":
+    for extension in extensions:
+        client.load_extension(f"extensions.{extension}")
 
 @client.event
 async def on_ready() :
@@ -16,7 +24,7 @@ async def on_ready() :
 async def ping(ctx) :
     await ctx.send(f"🏓 Pong with {str(round(client.latency, 2))}")
 
-@client.command(name="whoami")
+@client.command(brief="Tells you who you are")
 async def whoami(ctx) :
     await ctx.send(f"You are {ctx.message.author.name}")
 
