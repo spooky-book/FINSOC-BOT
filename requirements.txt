@@ -4,6 +4,15 @@
 # FINSOC-BOT/bot/main.py: 1,2
 discord.py == 1.7.3
 
-# FINSOC-BOT/bot/extensions/verify.py: 12
+# FINSOC-BOT/bot/extensions/gmail.py: 10
+google_api_python_client == 2.20.0
+
+# FINSOC-BOT/bot/extensions/gmail.py: 8
+google_auth_oauthlib == 0.4.6
+
+# FINSOC-BOT/bot/extensions/gmail.py: 11
+protobuf == 3.17.3
+
+# FINSOC-BOT/bot/extensions/verify.py: 11
 # FINSOC-BOT/bot/main.py: 3
 python_dotenv == 0.18.0
